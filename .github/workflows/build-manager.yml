@@ -62,7 +62,7 @@ jobs:
             -validity 1 \
             -storepass "$KEYSTORE_PASSWORD" \
             -keypass "$KEY_PASSWORD" \
-            -dname "CN=KernelSU PR Build" \
+            -dname "CN=Ludo PR Build" \
             -storetype JKS \
             -keystore pr-key.jks
 
@@ -164,7 +164,7 @@ jobs:
               echo KEY_PASSWORD='${{ secrets.KEY_PASSWORD }}'
               echo KEYSTORE_FILE='key.jks'
             } >> gradle.properties
-            echo "${{ secrets.KEYSTORE }}" | base64 -d > key.jks
+            printf "%s" "${{ secrets.KEYSTORE }}" | tr -cd "A-Za-z0-9+/=" | base64 -d > key.jks
           fi
 
       - name: Write PR key
@@ -296,7 +296,7 @@ jobs:
             echo "SIGN_KEY_PASSWORD=$PR_KEY_PASSWORD" >> $GITHUB_ENV
           else
             test -n "$PROD_KEYSTORE"
-            echo "$PROD_KEYSTORE" | base64 -d > key.jks
+            printf "%s" "$PROD_KEYSTORE" | tr -cd "A-Za-z0-9+/=" | base64 -d > key.jks
             echo "SIGN_KEYSTORE_FILE=key.jks" >> $GITHUB_ENV
             echo "SIGN_KEY_ALIAS=$PROD_KEY_ALIAS" >> $GITHUB_ENV
             echo "SIGN_KEYSTORE_PASSWORD=$PROD_KEYSTORE_PASSWORD" >> $GITHUB_ENV
