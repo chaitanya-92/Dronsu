@@ -24,9 +24,10 @@ val managerVersionCode = rootProject.extra["managerVersionCode"] as Int
 val managerVersionName = rootProject.extra["managerVersionName"] as String
 
 val isPrBuild = project.findProperty("IS_PR_BUILD")?.toString()?.toBoolean() ?: false
-// Keep the upstream KernelSU package identity for compatibility with kernel/userspace integration.
+// Ludo is an independent KernelSU manager. The kernel build must use the
+// matching package name and release certificate hash.
 val defaultManagerPackageName =
-    if (isPrBuild) "me.weishu.kernelsu.pr" else "me.weishu.kernelsu"
+    if (isPrBuild) "com.ludo.king.pr" else "com.ludo.king"
 val defaultManagerName = if (isPrBuild) "Ludo PR" else "Ludo"
 val managerPackageName = project.findProperty("KSU_PACKAGE_NAME")?.toString() ?: defaultManagerPackageName
 val managerName = project.findProperty("KSU_NAME")?.toString() ?: defaultManagerName
