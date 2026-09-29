@@ -22,6 +22,18 @@ on:
         required: false
         default: ''
         type: string
+      manager_package:
+        description: 'Manager package compiled into KernelSU'
+        required: true
+        type: string
+      manager_expected_size:
+        description: 'Manager certificate size'
+        required: true
+        type: string
+      manager_expected_hash:
+        description: 'Manager certificate SHA256'
+        required: true
+        type: string
 
 jobs:
   build-kernelsu-ko:
@@ -39,6 +51,9 @@ jobs:
       env:
         EXPECTED_SIZE2: ${{ inputs.expected_size2 }}
         EXPECTED_HASH2: ${{ inputs.expected_hash2 }}
+        MANAGER_PACKAGE: ${{ inputs.manager_package }}
+        MANAGER_EXPECTED_SIZE: ${{ inputs.manager_expected_size }}
+        MANAGER_EXPECTED_HASH: ${{ inputs.manager_expected_hash }}
       run: |
         git config --global --add safe.directory /__w/KernelSU/KernelSU
 
@@ -46,7 +61,7 @@ jobs:
 
         echo "=== Building kernelsu.ko for KMI: ${{ inputs.kmi }} ==="
 
-        EXTRA_ARGS=""
+        EXTRA_ARGS="KSU_MANAGER_PACKAGE=$MANAGER_PACKAGE KSU_EXPECTED_SIZE=$MANAGER_EXPECTED_SIZE KSU_EXPECTED_HASH=$MANAGER_EXPECTED_HASH"
         if [ -n "$EXPECTED_SIZE2" ] && [ -z "$EXPECTED_HASH2" ]; then
           echo "ERROR: expected_hash2 must be provided when expected_size2 is set."
           exit 1
@@ -86,6 +101,9 @@ jobs:
       env:
         EXPECTED_SIZE2: ${{ inputs.expected_size2 }}
         EXPECTED_HASH2: ${{ inputs.expected_hash2 }}
+        MANAGER_PACKAGE: ${{ inputs.manager_package }}
+        MANAGER_EXPECTED_SIZE: ${{ inputs.manager_expected_size }}
+        MANAGER_EXPECTED_HASH: ${{ inputs.manager_expected_hash }}
       run: |
         cd kernel
         make clean
