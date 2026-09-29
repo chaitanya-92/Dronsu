@@ -134,6 +134,7 @@ jobs:
       target: ${{ matrix.target }}
       pack_lkm: true
       pack_ksuinit: true
+      manager_package: ${{ needs.generate-key.outputs.manager_package }}
   
   build-ksud-extra:
     needs: [build-lkm, build-ksuinit]
