@@ -46,6 +46,9 @@ jobs:
       keystore: ${{ steps.gen.outputs.keystore }}
       keystore_password: ${{ steps.gen.outputs.keystore_password }}
       key_password: ${{ steps.gen.outputs.key_password }}
+      manager_package: ${{ steps.extract.outputs.manager_package }}
+      expected_size: ${{ steps.extract.outputs.expected_size }}
+      expected_hash: ${{ steps.extract.outputs.expected_hash }}
     steps:
       - name: Generate temporary keystore
         if: github.event_name == 'pull_request'
@@ -68,28 +71,42 @@ jobs:
 
           echo "keystore=$(base64 -w 0 pr-key.jks)" >> $GITHUB_OUTPUT
 
-      - name: Extract certificate hash and size
-        if: github.event_name == 'pull_request'
+      - name: Extract manager certificate hash and size
         id: extract
         env:
           STORE_PASS: ${{ steps.gen.outputs.keystore_password }}
+          PROD_KEYSTORE: ${{ secrets.KEYSTORE }}
+          PROD_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          PROD_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         run: |
-          # Export DER certificate
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            KEYSTORE_FILE=pr-key.jks
+            KEY_ALIAS=pr-key
+            STORE_PASSWORD="$STORE_PASS"
+            MANAGER_PACKAGE=com.ludo.king.pr
+          else
+            test -n "$PROD_KEYSTORE"
+            printf "%s" "$PROD_KEYSTORE" | tr -cd "A-Za-z0-9+/=" | base64 -d > prod-key.jks
+            KEYSTORE_FILE=prod-key.jks
+            KEY_ALIAS="$PROD_KEY_ALIAS"
+            STORE_PASSWORD="$PROD_KEYSTORE_PASSWORD"
+            MANAGER_PACKAGE=com.ludo.king
+          fi
+
           keytool -exportcert \
-            -alias pr-key \
-            -keystore pr-key.jks \
-            -storepass "$STORE_PASS" \
-            -file pr-cert.der
+            -alias "$KEY_ALIAS" \
+            -keystore "$KEYSTORE_FILE" \
+            -storepass "$STORE_PASSWORD" \
+            -file manager-cert.der
 
-          # Calculate size in hex
-          SIZE_DEC=$(stat -c%s pr-cert.der)
+          SIZE_DEC=$(stat -c%s manager-cert.der)
           SIZE_HEX=$(printf '0x%04x' "$SIZE_DEC")
-          echo "expected_size=$SIZE_HEX" >> $GITHUB_OUTPUT
+          HASH=$(sha256sum manager-cert.der | awk '{print $1}')
 
-          # Calculate SHA256 hash
-          HASH=$(sha256sum pr-cert.der | awk '{print $1}')
-          echo "expected_hash=$HASH" >> $GITHUB_OUTPUT
-
+          echo "manager_package=$MANAGER_PACKAGE" >> "$GITHUB_OUTPUT"
+          echo "expected_size=$SIZE_HEX" >> "$GITHUB_OUTPUT"
+          echo "expected_hash=$HASH" >> "$GITHUB_OUTPUT"
+          echo "Manager package: $MANAGER_PACKAGE"
           echo "Certificate size: $SIZE_HEX ($SIZE_DEC bytes)"
           echo "Certificate hash: $HASH"
 
