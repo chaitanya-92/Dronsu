@@ -12,6 +12,18 @@ on:
         required: false
         default: ''
         type: string
+      manager_package:
+        description: 'Manager package compiled into KernelSU'
+        required: true
+        type: string
+      manager_expected_size:
+        description: 'Manager certificate size'
+        required: true
+        type: string
+      manager_expected_hash:
+        description: 'Manager certificate SHA256'
+        required: true
+        type: string
   workflow_dispatch:
 jobs:
   build-lkm:
@@ -31,3 +43,6 @@ jobs:
       kmi: ${{ matrix.kmi }}
       expected_size2: ${{ inputs.expected_size2 || '' }}
       expected_hash2: ${{ inputs.expected_hash2 || '' }}
+      manager_package: ${{ inputs.manager_package }}
+      manager_expected_size: ${{ inputs.manager_expected_size }}
+      manager_expected_hash: ${{ inputs.manager_expected_hash }}
