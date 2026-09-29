@@ -37,7 +37,7 @@ apksign {
 }
 
 val materializeLudoIcon = tasks.register("materializeLudoIcon") {
-    val encoded = file("src/main/res/drawable/ludo_icon.webp.b64")
+    val encoded = file("ludo_icon.b64")
     val output = file("src/main/res/drawable/ludo_icon.webp")
     inputs.file(encoded)
     outputs.file(output)
