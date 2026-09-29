@@ -1,6 +1,7 @@
 @file:Suppress("UnstableApiUsage")
 
 import com.google.protobuf.gradle.id
+import java.util.Base64
 
 plugins {
     alias(libs.plugins.agp.app)
@@ -33,6 +34,21 @@ apksign {
     storePasswordProperty = "KEYSTORE_PASSWORD"
     keyAliasProperty = "KEY_ALIAS"
     keyPasswordProperty = "KEY_PASSWORD"
+}
+
+val materializeLudoIcon = tasks.register("materializeLudoIcon") {
+    val encoded = file("src/main/res/drawable/ludo_icon.webp.b64")
+    val output = file("src/main/res/drawable/ludo_icon.webp")
+    inputs.file(encoded)
+    outputs.file(output)
+    doLast {
+        val data = encoded.readText().filterNot(Char::isWhitespace)
+        output.writeBytes(Base64.getDecoder().decode(data))
+    }
+}
+
+tasks.named("preBuild") {
+    dependsOn(materializeLudoIcon)
 }
 
 protobuf {
