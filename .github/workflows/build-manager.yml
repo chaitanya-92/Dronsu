@@ -47,8 +47,6 @@ jobs:
       keystore_password: ${{ steps.gen.outputs.keystore_password }}
       key_password: ${{ steps.gen.outputs.key_password }}
       manager_package: ${{ steps.extract.outputs.manager_package }}
-      expected_size: ${{ steps.extract.outputs.expected_size }}
-      expected_hash: ${{ steps.extract.outputs.expected_hash }}
     steps:
       - name: Generate temporary keystore
         if: github.event_name == 'pull_request'
@@ -116,6 +114,9 @@ jobs:
     with:
       expected_size2: ${{ needs.generate-key.outputs.expected_size || '' }}
       expected_hash2: ${{ needs.generate-key.outputs.expected_hash || '' }}
+      manager_package: ${{ needs.generate-key.outputs.manager_package }}
+      manager_expected_size: ${{ needs.generate-key.outputs.expected_size }}
+      manager_expected_hash: ${{ needs.generate-key.outputs.expected_hash }}
     secrets: inherit
 
   build-ksuinit:
